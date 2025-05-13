@@ -1,9 +1,16 @@
 [
-  {
-    "id": 1,
-    "author": "John Doe",
-    "title": "Hello World",
-    "content": "This is my first post.",
-    "likes": 0
-  }
+    {
+        "id": 1,
+        "author": "blabla",
+        "title": "mama",
+        "content": "haha",
+        "likes": 1
+    },
+    {
+        "id": 2,
+        "author": "jhdsfbds",
+        "title": "dkfhs",
+        "content": "sdfkshdfds",
+        "likes": 6
+    }
 ]
