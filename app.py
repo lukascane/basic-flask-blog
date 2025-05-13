@@ -1,90 +1,69 @@
-from flask import Flask, request, render_template, redirect, url_for, abort
+from flask import Flask, render_template, request, redirect, url_for
 import json
+import os
 
 app = Flask(__name__)
 
+DATA_FILE = 'posts.json'
 
-# Load posts from posts.json
 def load_posts():
-    try:
-        with open('posts.json', 'r') as f:
-            return json.load(f)
-    except FileNotFoundError:
-        return []  # Return an empty list if the file doesn't exist
+    if not os.path.exists(DATA_FILE):
+        return []
+    with open(DATA_FILE, 'r') as f:
+        return json.load(f)
 
-
-# Save posts to posts.json
 def save_posts(posts):
-    with open('posts.json', 'w') as f:
+    with open(DATA_FILE, 'w') as f:
         json.dump(posts, f, indent=4)
 
+def get_post_by_id(post_id):
+    posts = load_posts()
+    for post in posts:
+        if post['id'] == post_id:
+            return post
+    return None
 
 @app.route('/')
 def index():
     posts = load_posts()
     return render_template('index.html', posts=posts)
 
-
 @app.route('/add', methods=['GET', 'POST'])
 def add():
     if request.method == 'POST':
-        author = request.form.get('author')
-        title = request.form.get('title')
-        content = request.form.get('content')
-
         posts = load_posts()
-
-        next_id = max(post['id'] for post in posts) + 1 if posts else 1
-
+        new_id = max([post['id'] for post in posts], default=0) + 1
         new_post = {
-            'id': next_id,
-            'author': author,
-            'title': title,
-            'content': content
+            'id': new_id,
+            'author': request.form['author'],
+            'title': request.form['title'],
+            'content': request.form['content']
         }
-
         posts.append(new_post)
         save_posts(posts)
-
         return redirect(url_for('index'))
     return render_template('add.html')
 
-
-@app.route('/delete/<int:post_id>', methods=['POST'])
+@app.route('/delete/<int:post_id>')
 def delete(post_id):
     posts = load_posts()
-
-    # Find the post with the given ID
-    post_to_delete = next((post for post in posts if post['id'] == post_id), None)
-
-    if post_to_delete:
-        posts.remove(post_to_delete)
-        save_posts(posts)
-        return redirect(url_for('index'))
-    else:
-        abort(404)  # Handle the case where the post doesn't exist
-
-
-def fetch_post_by_id(post_id):
-    posts = load_posts()
-    return next((post for post in posts if post['id'] == post_id), None)
-
+    posts = [post for post in posts if post['id'] != post_id]
+    save_posts(posts)
+    return redirect(url_for('index'))
 
 @app.route('/update/<int:post_id>', methods=['GET', 'POST'])
 def update(post_id):
-    post = fetch_post_by_id(post_id)
-    if post is None:
-        abort(404)
-
+    posts = load_posts()
+    post = get_post_by_id(post_id)
+    if not post:
+        return "Post not found", 404
     if request.method == 'POST':
-        post['author'] = request.form.get('author')
-        post['title'] = request.form.get('title')
-        post['content'] = request.form.get('content')
-        save_posts(load_posts())  # Save the updated posts
+        post['author'] = request.form['author']
+        post['title'] = request.form['title']
+        post['content'] = request.form['content']
+        save_posts(posts)
         return redirect(url_for('index'))
-
     return render_template('update.html', post=post)
 
-
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(host="0.0.0.0", port=5000, debug=True)
