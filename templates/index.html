@@ -7,15 +7,25 @@
 </head>
 <body>
     <h1>Blog Posts</h1>
-    <a href="{{ url_for('add') }}">Add New Post</a>
+
+    <div style="margin-bottom: 20px;">
+        <a href="{{ url_for('add') }}">➕ Add New Post</a>
+    </div>
+
     {% for post in posts %}
         <div class="post">
             <h2>{{ post.title }}</h2>
             <p><strong>Author:</strong> {{ post.author }}</p>
             <p>{{ post.content }}</p>
-            <a href="{{ url_for('update', post_id=post.id) }}">Update</a>
-            <a href="{{ url_for('delete', post_id=post.id) }}">Delete</a>
+
+            <a href="{{ url_for('update', post_id=post.id) }}">✏️ Update</a>
+            <a href="{{ url_for('delete', post_id=post.id) }}">🗑️ Delete</a>
+            <p>❤️ Likes: {{ post.likes }}</p>
+            <a href="{{ url_for('like', post_id=post.id) }}">
+                <button>Like ❤️</button>
+            </a>
         </div>
+        <hr>
     {% endfor %}
 </body>
 </html>
